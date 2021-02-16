@@ -1,0 +1,43 @@
+RANDFILE        = ./.rnd
+
+
+####################################################################
+
+[ req ]
+default_bits       = 2048
+distinguished_name = server_distinguished_name
+req_extensions     = server_req_extensions
+string_mask        = utf8only
+prompt = no
+
+####################################################################
+[ server_distinguished_name ]
+countryName         = BR
+stateOrProvinceName         = Parana
+localityName                = YourCity
+organizationName            = Your Company Name
+commonName         = mdb_node_cn
+emailAddress = yourcompanyemail@email.com
+
+
+####################################################################
+
+[ server_req_extensions ]
+subjectKeyIdentifier = hash
+basicConstraints     = CA:FALSE
+keyUsage             = digitalSignature, keyEncipherment
+subjectAltName       = @alternate_names
+nsComment            = "OpenSSL Generated Certificate"
+extendedKeyUsage = clientAuth, serverAuth
+
+
+####################################################################
+
+[ alternate_names ]
+IP.1 = 170.17.5.5
+IP.2 = 170.17.5.6
+IP.3 = 170.17.5.7
+IP.4 = 170.17.5.254
+IP.5 = 127.0.0.1
+IP.6 = ::1
+DNS.1 = localhost

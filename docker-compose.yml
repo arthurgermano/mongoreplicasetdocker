@@ -1,0 +1,122 @@
+# docker-compose yml file
+# docker version must be compatible with your running docker version # for more info see https://docs.docker.com/compose/compose-file/compose-versioning/
+# Don't forget to use only spaces to indent ok!
+version: "3.9"
+services:
+  # The container mongo_node_1 configurations #############
+  mongo_node_1:
+    container_name: mongo_node_1
+    hostname: mongo_node_1
+    # the image from the docker-hub repository
+    image: "mongo"
+    # mongo uses port 27017 to change see more info https://hub.docker.com/_/mongo
+    expose:
+      - "27017"
+    # here comes the interesting part, with volumes we can easily insert all the configuration that we need!
+    volumes:
+      # This volume will hold the database information, what you save, your collections, documents, etc. Since we have 3 nodes we need three places which will hold information this is the first one
+      - /home/arthurgermano/projects/medium/mongodocker/data/node_1:/data/db
+      # This volume will hold the Server Certificate file which will be signed by the CA and will make work TLS - The shell script create all the folders inside ssl just need to run the script!
+      - /home/arthurgermano/projects/medium/mongodocker/ssl/node_1:/data/ssl/
+      # This volume will hold this node cluster configuration! Each node has it's own configuration and differences, but to simplify things I just created ONE configuration to dominate them ALL =D! The file is the cluster.conf
+      - /home/arthurgermano/projects/medium/mongodocker/config:/data/config
+    # always restart right.. keep it alive!
+    restart: always
+    # entrypoint will execute a command inside the container as soon as it starts. So basically we are saying run mongo database with this file configuration settings. Note that the cluster.conf is inside the volume folder set in the volume section. Since it is mapped inside the container we don't need to copy any files (nice and slender!)
+    entrypoint: ["/usr/bin/mongod", "--config", "/data/config/cluster.conf"]
+    # setting the inside network
+    networks:
+      # the name of the below configured network we have to belong to it
+      my_network:
+        # we have to specify a FIXED IP - this IP will be use after
+        ipv4_address: 170.17.5.5
+
+    # This works like MAGIC - this allows us to connect inside the network "my_network" FROM THE HOST - because we are creating a closed network we would have to configure a DNS server only to reach it. So very complicated. This option make it easy for us! Check your ip address with ifconfig in Linux and REPLACE "192.168.100.5"
+    extra_hosts:
+      - "localhost:192.168.100.5"
+    # mongo images use this variables inside the container and they are very helpful. Set the username and password of the Database. We are going to have to configure it by hand anyway but it's nice to have it there
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mdb_admin
+      MONGO_INITDB_ROOT_PASSWORD: mdb_pass
+  # The container mongo_node_2 configurations #############
+  mongo_node_2:
+    container_name: mongo_node_2
+    hostname: mongo_node_2
+    # the image from the docker-hub repository
+    image: "mongo"
+    # mongo uses port 27017 to change see more info https://hub.docker.com/_/mongo
+    expose:
+      - "27017"
+    # here comes the interesting part, with volumes we can easily insert all the configuration that we need!
+    volumes:
+      # This volume will hold the database information, what you save, your collections, documents, etc. Since we have 3 nodes we need three places which will hold information this is the second one
+      - /home/arthurgermano/projects/medium/mongodocker/data/node_2:/data/db
+      # This volume will hold the Server Certificate file which will be signed by the CA and will make work TLS - The shell script create all the folders inside ssl just need to run the script!
+      - /home/arthurgermano/projects/medium/mongodocker/ssl/node_2:/data/ssl
+      # This volume will hold this node cluster configuration! Each node has it's own configuration and differences, but to simplify things I just created ONE configuration to dominate them ALL =D! The file in the cluster.conf
+      - /home/arthurgermano/projects/medium/mongodocker/config:/data/config
+    # always restart right.. keep it alive!
+    restart: always
+    # entrypoint will execute a command inside the container as soon as it starts. So basically we are saying run mongo database with this file configuration settings. Note that the cluster.conf is inside the volume folder set in the volume section. Since it is mapped inside the container we don't need to copy any files (nice and slender!)
+    entrypoint: ["/usr/bin/mongod", "--config", "/data/config/cluster.conf"]
+    # setting the inside network
+    networks:
+      # the name of the below configured network we have to belong to it
+      my_network:
+        # we have to specify a FIXED IP - this IP will be use after
+        ipv4_address: 170.17.5.6
+    # This works like MAGIC - this allows us to connect inside the network "my_network" FROM THE HOST - because we are creating a closed network we would have to configure a DNS server only to reach it. So very complicated. This option make it easy for us! Check your ip address with ifconfig in Linux and REPLACE "192.168.100.5"
+    extra_hosts:
+      - "localhost:192.168.100.5"
+    # mongo images use this variables inside the container and they are very helpful. Set the username and password of the Database. We are going to have to configure it by hand anyway but it's nice to have it there
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mdb_admin
+      MONGO_INITDB_ROOT_PASSWORD: mdb_pass
+  # The container mongo_node_arbiter configurations #############
+  mongo_node_arbiter:
+    container_name: mongo_node_arbiter
+    hostname: mongo_node_arbiter
+    # the image from the docker-hub repository
+    image: "mongo"
+    # mongo uses port 27017 to change see more info https://hub.docker.com/_/mongo
+    expose:
+      - "27017"
+    # here comes the interesting part, with volumes we can easily insert all the configuration that we need!
+    volumes:
+      # This volume will hold the database information, what you save, your collections, documents, etc. Since we have 3 nodes we need three places which will hold information this is the third one and the arbiter only chooses which node is primary or secondary
+      - /home/arthurgermano/projects/medium/mongodocker/data/node_arbiter:/data/db
+      # This volume will hold the Server Certificate file which will be signed by the CA and will make work TLS - The shell script create all the folders inside ssl just need to run the script!
+      - /home/arthurgermano/projects/medium/mongodocker/ssl/node_arbiter:/data/ssl
+      # This volume will hold this node cluster configuration! Each node has it's own configuration and differences, but to simplify things I just created ONE configuration to dominate them ALL =D! The file in the cluster.conf
+      - /home/arthurgermano/projects/medium/mongodocker/config:/data/config
+    # always restart right.. keep it alive!
+    restart: always
+    # entrypoint will execute a command inside the container as soon as it starts. So basically we are saying run mongo database with this file configuration settings. Note that the cluster.conf is inside the volume folder set in the volume section. Since it is mapped inside the container we don't need to copy any files (nice and slender!)
+    entrypoint: ["/usr/bin/mongod", "--config", "/data/config/cluster.conf"]
+    # setting the inside network
+    networks:
+      # the name of the below configured network we have to belong to it
+      my_network:
+        # we have to specify a FIXED IP - this IP will be use after
+        ipv4_address: 170.17.5.7
+    # This works like MAGIC - this allows us to connect inside the network "my_network" FROM THE HOST - because we are creating a closed network we would have to configure a DNS server only to reach it. So very complicated. This option make it easy for us! Check your ip address with ifconfig in Linux and REPLACE "192.168.100.5"
+    extra_hosts:
+      - "localhost:192.168.100.5"
+    # mongo images use this variables inside the container and they are very helpful. Set the username and password of the Database. We are going to have to configure it by hand anyway but it's nice to have it there
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mdb_admin
+      MONGO_INITDB_ROOT_PASSWORD: mdb_pass
+# Finally we create our network. And WE HAVE to create it. Docker only allows us to set IP address for custom networks so here we go
+networks:
+  # this is your custom network NAME inside this file
+  my_network:
+    # this name is the docker network name outside. We can check it with docker network inspect my_network_default
+    name: my_network_default
+    # here we configure the driver bridge is default, and set the network specifics
+    ipam:
+      driver: default
+      config:
+        - subnet: 170.17.0.0/16
+          ip_range: 170.17.0.0/16
+          gateway: 170.17.5.254
+# THE END
